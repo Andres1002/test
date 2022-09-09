@@ -13,7 +13,7 @@ st.plotly_chart(fig, use_container_width=True)
 fig = px.bar(df, x='Date', y='Volume',title="Spy Weekly Volume Shares, Year-To_Date-Graph")
 st.plotly_chart(fig, use_container_width=True)
 
-image = Image.open(r'Open_Access_colours_Venn.PNG')
+image = Image.open(r'Open_Access_colours_Venn.png')
 
 st.image(image, caption='Image taken from Introducing Volcanica: The first diamond open-access journal for volcanology ')
 # Streamlit widgets automatically run the script from top to bottom. Since
