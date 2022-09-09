@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from PIL import Image
 
+from PIL import Image
 data = pd.read_csv(r'SPY.csv')
 df = pd.DataFrame(data)
 st.title("Test Graphs using Plotly")
