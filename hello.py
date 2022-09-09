@@ -18,7 +18,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.header("Using st.image (citation included)")
 image = Image.open(r'Open_Access_colours_Venn.png')
 
-st.image(image, caption='Image taken from Introducing Volcanica: The first diamond open-access journal for volcanology ')
+st.image(image, caption='Image taken from: Introducing Volcanica: The first diamond open-access journal for volcanology ')
 # Streamlit widgets automatically run the script from top to bottom. Since
 # this button is not connected to any other logic, it just causes a plain
 # rerun.
