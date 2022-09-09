@@ -7,12 +7,15 @@ data = pd.read_csv(r'SPY.csv')
 df = pd.DataFrame(data)
 st.title("Test Graphs using Plotly")
 
+st.header("Using px.line and st.plotly_chart")
 fig = px.line(df, x="Date", y="Close", title="SPY Weekly Close Price, Year-To-Date Graph")
 st.plotly_chart(fig, use_container_width=True)
 
+st.header("Using px.bar and st.plotly_chart")
 fig = px.bar(df, x='Date', y='Volume',title="Spy Weekly Volume Shares, Year-To_Date-Graph")
 st.plotly_chart(fig, use_container_width=True)
 
+st.header("st.image")
 image = Image.open(r'Open_Access_colours_Venn.png')
 
 st.image(image, caption='Image taken from Introducing Volcanica: The first diamond open-access journal for volcanology ')
