@@ -16,7 +16,7 @@ with st.sidebar:
 
 
 ############ ACQUIRE DATA ###################
-path = r'C:\Users\Andres\Documents\GitHub\test\Stock CSVs'
+path = r'Stock CSVs'
 files = Path(path).glob('*.csv')  # note .rglob to get subdirectories
 dfs = list()
 for f in files:
