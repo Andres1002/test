@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 from PIL import Image
-data = pd.read_csv(r'SPY.csv')
+data = pd.read_csv(r'Stock CSVs/SPY.csv')
 df = pd.DataFrame(data)
 st.title("Test Graphs using Plotly")
 
@@ -16,7 +16,7 @@ fig = px.bar(df, x='Date', y='Volume',title="Spy Weekly Volume Shares, Year-To_D
 st.plotly_chart(fig, use_container_width=True)
 
 st.header("Using st.image (citation included)")
-image = Image.open(r'Open_Access_colours_Venn.png')
+image = Image.open(r'Images/Open_Access_colours_Venn.png')
 
 st.image(image, caption='Image taken from: Introducing Volcanica: The first diamond open-access journal for volcanology ')
 # Streamlit widgets automatically run the script from top to bottom. Since
