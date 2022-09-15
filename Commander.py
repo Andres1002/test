@@ -1,29 +1,27 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
-from pathlib import Path
 import plotly.graph_objects as go
+from io import StringIO 
+import os
 # Initial Variables
 x=0;
+dfs = list()
 
 st.title("Testing Platform for URA")
 with st.sidebar:
-    uploaded_files = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
-    for uploaded_file in uploaded_files:
-        bytes_data = uploaded_file.read()
-        st.write("filename:", uploaded_file.name)
-        st.write(bytes_data)
+    files = st.file_uploader("Please choose a CSV file", accept_multiple_files=True)
+    for file in files:
+        bytes_data =file.getvalue()
+        st.write("filename:", file.name)
+        
+        stringio = StringIO(file.getvalue().decode("utf-8"))
+        string_data = stringio.read()
 
+        df= pd.read_csv(file)
+        df['file'] = os.path.splitext(file.name)[0]
+        dfs.append(df)
 
-############ ACQUIRE DATA ###################
-path = r'Stock CSVs'
-files = Path(path).glob('*.csv')  # note .rglob to get subdirectories
-dfs = list()
-for f in files:
-    data = pd.read_csv(f)
-    data['file'] = f.stem
-    dfs.append(data)
-## end for
 cnt=len(dfs)
 ################################# END ACQUIRE DATA ###############################
 
@@ -31,7 +29,7 @@ cnt=len(dfs)
 fig = go.Figure()
 while (x<cnt):
     
-    fig.add_trace(go.Scatter(x=dfs[x]["Date"], y=dfs[x]["Close"],name=str(dfs[x].at[0,"file"])))    
+    fig.add_trace(go.Scatter(x=dfs[x]["Date"], y=dfs[x]["Close"],name=str(dfs[x].at[0,"file"])))       
     fig.update_layout(
     title="Stock Prices of Selected Stocks", xaxis_title="Date", yaxis_title="Close Price")
     x=x+1
