@@ -7,7 +7,7 @@ import os
 # Initial Variables
 x=0;
 dfs = list()
-
+### Acquire Data ###
 st.title("Testing Platform for URA")
 with st.sidebar:
     files = st.file_uploader("Please choose a CSV file", accept_multiple_files=True)
@@ -21,6 +21,9 @@ with st.sidebar:
         df= pd.read_csv(file)
         df['file'] = os.path.splitext(file.name)[0]
         dfs.append(df)
+        
+st.success('Upload Succesful!')
+
 
 cnt=len(dfs)
 ################################# END ACQUIRE DATA ###############################
