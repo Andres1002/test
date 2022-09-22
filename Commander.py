@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
-import plotly.graph_objects as go
 from io import StringIO 
 import os
+from Plotter import barplotter, lineplotter
 # Initial Variables
 x=0;
 dfs = list()
@@ -22,41 +21,15 @@ with st.sidebar:
         df['file'] = os.path.splitext(file.name)[0]
         dfs.append(df)
         
-st.success('Upload Succesful!')
-
 
 cnt=len(dfs)
 ################################# END ACQUIRE DATA ###############################
 
 ######## PLOT ############
-fig = go.Figure()
-while (x<cnt):
-    
-    fig.add_trace(go.Scatter(x=dfs[x]["Date"], y=dfs[x]["Close"],name=str(dfs[x].at[0,"file"])))       
-    fig.update_layout(
-    title="Stock Prices of Selected Stocks", xaxis_title="Date", yaxis_title="Close Price")
-    x=x+1
-    ## END while
+lineplotter(cnt,dfs)   
 
-st.plotly_chart(fig, use_container_width=True)    
+barplotter(cnt,dfs)
 
-
-x=0;
-fig = go.Figure()
-while (x<cnt):
-    fig.add_trace(go.Bar(x=dfs[x]["Date"], y=dfs[x]["Volume"],name=str(dfs[x].at[0,"file"])))    
-    fig.update_layout(
-    title="Volume of Selected Stocks", xaxis_title="Date", yaxis_title="Volume")
-    x=x+1
-    ## END while
-st.plotly_chart(fig, use_container_width=True)
 
 ################ End plot ############
 
-st.header("Using st.image (citation included)")
-image = Image.open(r'Images/Open_Access_colours_Venn.png')
-st.image(image, caption='Image taken from: Introducing Volcanica: The first diamond open-access journal for volcanology ')
-# Streamlit widgets automatically run the script from top to bottom. Since
-# this button is not connected to any other logic, it just causes a plain
-# rerun.
-st.button("Re-run")
