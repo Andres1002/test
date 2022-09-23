@@ -1,3 +1,1 @@
 plotly
-plots
-csvparser
