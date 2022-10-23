@@ -77,9 +77,14 @@ lookup=[]
 majordep=[]
 titlestu=[]
 CorrespondingAuthor=[]
-df= pd.read_csv('savedrecs.csv')
-df = df[df["Document Type"] == "Article"] 
+
+df= pd.read_csv('savedrecs2.csv')
+#.str.contains("Article")
+
+#df = df[df["Document Type"] == "Article") 
+df = df[df["Document Type"].str.contains("Article")]
 df = df.reset_index(drop=True)
+
      # if one email split and search net ID
 df["CA Last Name"] = df["Reprint Addresses"].str.split('(').str[0]
 df["CA Last Name"] = df["CA Last Name"].str.split(';').str.get(-1)
@@ -87,14 +92,22 @@ df["CA Last Name"]= df["CA Last Name"].str.split(',').str[0]
 df["CA Last Name"]= df["CA Last Name"].str.lower()
         # add new column
 df["Author Full Names"] = df["Author Full Names"].str.lower()
+df['Email Addresses'] = df['Email Addresses'].fillna("")
+
 while x<len(df):
     #look for .edu first
     string=df["CA Last Name"][x]
     string_in_string = r"({}, [a-zA-Z- ]+;|{}, [a-zA-Z- ]+|{} [a-zA-Z- ])".format(string,string,string)
     df["copy"]= df["Author Full Names"].str.extract(string_in_string)
-    a=";" in df["Email Addresses"][x]
-    b="@iastate.edu" in df["Email Addresses"][x]
-    v=".edu" in df["Email Addresses"][x]
+    if df["Email Addresses"][x] == "":
+        a=False
+        b=False
+        v=False
+    else:
+        a=";" in df["Email Addresses"][x]
+        b="@iastate.edu" in df["Email Addresses"][x]
+        v=".edu" in df["Email Addresses"][x]
+        
     if a == False and b== True:
         lookup.append(df["Email Addresses"][x])
         CAParser(lookup[x])
