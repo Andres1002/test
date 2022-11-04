@@ -7,6 +7,16 @@ Created on Wed Sep 21 21:27:06 2022
 import plotly.graph_objects as go
 import streamlit as st
 
+def csvparser(files):
+    dfs = list()
+    df=pd.DataFrame()
+    for file in files:
+        st.write("filename:", file.name)
+        df= pd.read_csv(file)
+        df['file'] = os.path.splitext(file.name)[0]
+        dfs.append(df)
+    return dfs,df
+
 def lineplotter(cnt,dfs):
     x=0;
     fig = go.Figure()
