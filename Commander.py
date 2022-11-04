@@ -1,8 +1,19 @@
 import streamlit as st
 import sys
-from csvparser import csvparser
 import plotly.graph_objects as go
+import pandas as pd
+import os
 # Initial Variables
+def csvparser(files):
+    dfs = list()
+    df=pd.DataFrame()
+    for file in files:
+        st.write("filename:", file.name)
+        df= pd.read_csv(file)
+        df['file'] = os.path.splitext(file.name)[0]
+        dfs.append(df)
+    return dfs,df
+
 def barplotter(cnt,dfs):
     x=0;
     fig = go.Figure()
