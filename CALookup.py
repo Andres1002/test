@@ -21,6 +21,7 @@ def ISU_Directory_lookup(CorrespondingA):
     status=[]
     isstudent=[]
     name=[]
+    types=[]
     
     if  parsed_response['status']== "success": #If Person is on directory grab info
         status=parsed_response['status']
@@ -30,16 +31,18 @@ def ISU_Directory_lookup(CorrespondingA):
             status=parsed_response['status']
             classification=parsed_response['data']['persons'][0]['classification']
             major=parsed_response['data']['persons'][0]["major"]
+            types="Student"
         
         else:  #if person is faculty grab certain info
             status=parsed_response['status']
             department = parsed_response['data']['persons'][0]['addresses'][0]['department']
             department_char_code = parsed_response['data']['persons'][0]['addresses'][0]['departmentCharCode']
             title = parsed_response['data']['persons'][0]['title']
+            types="Faculty"
     else: # could not find person in directory
         status="f"
         return status # return fail
-    return status,isstudent, department, department_char_code, title, classification,major,name #return info
+    return status,isstudent, department, department_char_code, title, classification,major,name,types #return info
 
 def CAParser(CorrespondingA):
     if  ISU_Directory_lookup(lookup[x])[0] == "success": #if person found in directory
@@ -51,7 +54,7 @@ def CAParser(CorrespondingA):
             CorrespondingAuthor.append(name)
             majordepraw.append(major)
             titlestu.append(classification)
-            
+            typetitle.append(ISU_Directory_lookup(lookup[x])[8])
             
         else: #else 2 then is Faculty and save faculty data
             dept = ISU_Directory_lookup(lookup[x])[2]
@@ -61,13 +64,13 @@ def CAParser(CorrespondingA):
             CorrespondingAuthor.append(name)
             majordepraw.append(dept)
             titlestu.append(title)
+            typetitle.append(ISU_Directory_lookup(lookup[x])[8])
     else: #else 1 if cannot find person get WoS guess Data
         CorrespondingAuthor.append(df["copy"][x])
     #replace WoS department Data with augmented data from dictionary 
         majordepraw.append(df["WoS Department"][x])
-
-  
-        titlestu.append("")
+        typetitle.append("No Data")
+        titlestu.append("No Data")
     return CorrespondingAuthor,majordepraw,titlestu
 
 ##List Pre-allocation
@@ -78,12 +81,15 @@ lookup=[]
 majordepraw=[]
 titlestu=[]
 CorrespondingAuthor=[]
+typetitle=[]
+collegeinfo=[]
  ## End List Pre-Allocation
 #Read Data
-df= pd.read_csv('savedrecs3.csv')
+df= pd.read_csv('savedrecs.csv')
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
 df2=pd.read_csv('dictionary.csv')
+df3=pd.read_csv('DictionaryCollege.csv')
 
 timer=(len(df)-x)*2
 print(len(df),"Accepted Entries Found")
@@ -132,6 +138,7 @@ while x<len(df):
             else:
                 y=y+1
         y=0
+
         x=x+1
     #elseif false and false
         #api likely to turn false info
@@ -149,8 +156,8 @@ while x<len(df):
 
 
             CorrespondingAuthor.append(df["copy"][x])
-            titlestu.append("")
-            
+            titlestu.append("No Data")
+            typetitle.append("No Data")
         else: #fallback if all else fails gmail accounts, yahoo acounts
             lookup.append(df["copy"][x])
             CAParser(lookup[x])
@@ -163,7 +170,7 @@ while x<len(df):
             else:
                 y=y+1
         y=0
-        
+
 
         x=x+1
     if (printcounter == 5):
@@ -174,15 +181,28 @@ while x<len(df):
     percentage=x/len(df)*100
     print("Checking Author",x,"/",len(df),"    Program is",format(percentage,'>1.2f'),"% Complete!",)
     
+x=0
 
-
-
+### Make new script for this ###
+while x<len(df):
+    while y<len(df3):
+        if df3['Department'][y] ==majordepraw[x]:
+            collegeinfo.append(df3['College'][y])
+      
+            x=x+1
+            break
+        else:
+            y=y+1
+            
+    y=0
+##########################################################
 
 #turn datasets into new columns
 df["Corresponding Author"] = CorrespondingAuthor
 df["Department/Major"]=majordepraw
 df["Title/Classification"]=titlestu
-
+df["StudentOrFaculty"]=typetitle
+df["College"]=collegeinfo
 ######
 # str method or replace (replace & with and before admitting to count)
 
@@ -191,7 +211,10 @@ df["Title/Classification"]=titlestu
 #print to csv
 df.to_csv("out.csv")
 ## Cannot put in same dataframe index does not match
-df['Department/Major'].value_counts().to_csv('Count.csv') #count dept names
+df['Department/Major'].value_counts().to_csv('CountDept.csv') #count dept names
+df["Title/Classification"].value_counts().to_csv('CountTitle.csv') #count title names
+df["StudentOrFaculty"].value_counts().to_csv('CountSoT.csv')
+df["College"].value_counts().to_csv('CountColl.csv')
 print("....Program Ended Sucessfully...")
     #print(department_char_code)
 
