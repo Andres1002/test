@@ -85,7 +85,7 @@ typetitle=[]
 collegeinfo=[]
  ## End List Pre-Allocation
 #Read Data
-df= pd.read_csv('savedrecs.csv')
+df= pd.read_csv('savedrecs3.csv')
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
 df2=pd.read_csv('dictionary.csv')
@@ -184,17 +184,7 @@ while x<len(df):
 x=0
 
 ### Make new script for this ###
-while x<len(df):
-    while y<len(df3):
-        if df3['Department'][y] ==majordepraw[x]:
-            collegeinfo.append(df3['College'][y])
-      
-            x=x+1
-            break
-        else:
-            y=y+1
-            
-    y=0
+
 ##########################################################
 
 #turn datasets into new columns
@@ -202,7 +192,6 @@ df["Corresponding Author"] = CorrespondingAuthor
 df["Department/Major"]=majordepraw
 df["Title/Classification"]=titlestu
 df["StudentOrFaculty"]=typetitle
-df["College"]=collegeinfo
 ######
 # str method or replace (replace & with and before admitting to count)
 
@@ -213,9 +202,27 @@ df.to_csv("out.csv")
 ## Cannot put in same dataframe index does not match
 df['Department/Major'].value_counts().to_csv('CountDept.csv') #count dept names
 df["Title/Classification"].value_counts().to_csv('CountTitle.csv') #count title names
-df["StudentOrFaculty"].value_counts().to_csv('CountSoT.csv')
-df["College"].value_counts().to_csv('CountColl.csv')
-print("....Program Ended Sucessfully...")
+df["StudentOrFaculty"].value_counts().to_csv('CountClass.csv')
+### Make new script for this ###
+
+while x<len(df):
+    while y<len(df3):
+        if df3['Department'][y] ==majordepraw[x]:
+            collegeinfo.append(df3['College'][y])
+      
+            x=x+1
+            break
+        else:
+            y=y+1
+    if y==len(df3):
+        majordepraw.append(collegeinfo)
+        print("Input College Data for:",majordepraw[x])
+        x=x+1
+    y=0
+    if len(majordepraw)== len(collegeinfo):
+        df["College"]=collegeinfo
+        df["College"].value_counts().to_csv('CountColl.csv')
+        print("....Program Ended Sucessfully...")
     #print(department_char_code)
 
     #print ("In ISU Directory")
