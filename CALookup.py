@@ -85,11 +85,11 @@ typetitle=[]
 collegeinfo=[]
  ## End List Pre-Allocation
 #Read Data
-df= pd.read_csv('savedrecs3.csv')
+df= pd.read_csv('savedrecs2.csv')
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
-df2=pd.read_csv('dictionary.csv')
-df3=pd.read_csv('DictionaryCollege.csv')
+df2=pd.read_csv('Dictionary/dictionary.csv')
+df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
 
 timer=(len(df)-x)*2
 print(len(df),"Accepted Entries Found")
@@ -198,33 +198,31 @@ df["StudentOrFaculty"]=typetitle
 
 ###
 #print to csv
-df.to_csv("out.csv")
+
 ## Cannot put in same dataframe index does not match
-df['Department/Major'].value_counts().to_csv('CountDept.csv') #count dept names
-df["Title/Classification"].value_counts().to_csv('CountTitle.csv') #count title names
-df["StudentOrFaculty"].value_counts().to_csv('CountClass.csv')
+df['Department/Major'].value_counts().to_csv('Output/CountDept.csv') #count dept names
+df["Title/Classification"].value_counts().to_csv('Output/CountTitle.csv') #count title names
+df["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 ### Make new script for this ###
 
 while x<len(df):
     while y<len(df3):
-        if df3['Department'][y] ==majordepraw[x]:
-            collegeinfo.append(df3['College'][y])
+        if df3['Department'][y] ==majordepraw[x]: #match dept
+            collegeinfo.append(df3['College'][y]) #grab college info
       
             x=x+1
-            break
+            break #restart loop
         else:
-            y=y+1
-    if y==len(df3):
+            y=y+1 #else keep looking
+    if y==len(df3): # if cant find notify user
         majordepraw.append(collegeinfo)
-        print("Input College Data for:",majordepraw[x])
+        print("Error: Input College Data for:",majordepraw[x])
         x=x+1
     y=0
-    if len(majordepraw)== len(collegeinfo):
+    if len(majordepraw)== len(collegeinfo): #If all are accounted for print
         df["College"]=collegeinfo
-        df["College"].value_counts().to_csv('CountColl.csv')
+        df["College"].value_counts().to_csv('CSVs/CountColl.csv')
         print("....Program Ended Sucessfully...")
     #print(department_char_code)
+df.to_csv("Output/Corresponding Author Info.csv")
 
-    #print ("In ISU Directory")
-    #df value_counts look up
-    
