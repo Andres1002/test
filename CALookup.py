@@ -85,7 +85,7 @@ typetitle=[]
 collegeinfo=[]
  ## End List Pre-Allocation
 #Read Data
-df= pd.read_csv('savedrecs2.csv')
+df= pd.read_csv('savedrecs3.csv')
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
 df2=pd.read_csv('Dictionary/dictionary.csv')
@@ -204,11 +204,14 @@ df['Department/Major'].value_counts().to_csv('Output/CountDept.csv') #count dept
 df["Title/Classification"].value_counts().to_csv('Output/CountTitle.csv') #count title names
 df["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 ### Make new script for this ###
-
+NAs=[]
 while x<len(df):
     while y<len(df3):
         if df3['Department'][y] ==majordepraw[x]: #match dept
             collegeinfo.append(df3['College'][y]) #grab college info
+            if  df3['College'][y]=="N.A.":
+                NAs.append(majordepraw[x])
+            
       
             x=x+1
             break #restart loop
@@ -216,13 +219,19 @@ while x<len(df):
             y=y+1 #else keep looking
     if y==len(df3): # if cant find notify user
         majordepraw.append(collegeinfo)
+        ##replace with blank
         print("Error: Input College Data for:",majordepraw[x])
+        majordepraw[x] = "Input Data"
         x=x+1
     y=0
     if len(majordepraw)== len(collegeinfo): #If all are accounted for print
         df["College"]=collegeinfo
-        df["College"].value_counts().to_csv('CSVs/CountColl.csv')
+        df["College"].value_counts().to_csv('Output/CountColl.csv')
         print("....Program Ended Sucessfully...")
     #print(department_char_code)
+    
 df.to_csv("Output/Corresponding Author Info.csv")
+df4=pd.DataFrame()
+df4["Non Applicable"]=pd.DataFrame(NAs)
+df4.value_counts().to_csv("Output/Non Applicables.csv")
 

@@ -24,7 +24,59 @@ def barplotter(df):
     st.plotly_chart(fig, use_container_width=True)
     
 sys.path.append(r'C:\Users\Andres\Documents\GitHub\test\Functions')
+df2=pd.DataFrame()
 
+uploaded_files = st.file_uploader("Choose a CSV file", type={"csv", "txt"}, accept_multiple_files=True)
+for uploaded_file in uploaded_files:
+    st.write("filename:", uploaded_file.name)
+    
+    if uploaded_file.name =="CountClass.csv":
+        df2= pd.read_csv(uploaded_file)
+        st.header("Corresponding Authors by Classification")
+        fig=px.pie(df2,values="StudentOrFaculty", names="Unnamed: 0")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
+        
+    if uploaded_file.name =="CountColl.csv":
+        df3= pd.read_csv(uploaded_file)
+        st.header("Corresponding Authors by College")
+        fig=px.pie(df3,values="College", names="Unnamed: 0")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
+        
+    if uploaded_file.name =="CountDept.csv":
+        df= pd.read_csv(uploaded_file)
+        st.header("Corresponding Authors by Department")
+        barplotter(df)
+
+    ######### Department ###########3
+
+    #Try a dummy csv or an if statment before this
+
+        fig=px.pie(df,values="Department/Major", names="Unnamed: 0")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
+    ################ End plot ############
+
+
+        df.loc[df['Department/Major'] < 3, 'Unnamed: 0'] = 'Outliers'
+        fig=px.pie(df,values="Department/Major", names="Unnamed: 0")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
+        
+    if uploaded_file.name =="CountTitle.csv":
+        df4= pd.read_csv(uploaded_file)
+        st.header("Corresponding Authors by Title")
+        fig=px.pie(df4,values="Title/Classification", names="Unnamed: 0")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
+        
+    if uploaded_file.name =="Non Applicables.csv":
+        df5= pd.read_csv(uploaded_file)
+        st.header("Deeper look into NAs")
+        fig=px.pie(df5,values="0", names="Non Applicable")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        st.plotly_chart(fig, use_container_width=False)
 
 ### Acquire Data ###
 st.title("Corresponding Author Lookup")
@@ -58,6 +110,7 @@ if files is not None:
     st.plotly_chart(fig, use_container_width=False)
 ######################################
 ##################### College #########
+
 st.header("Corresponding Authors by College")
 files3 = st.file_uploader("Upload College Info", type={"csv", "txt"}, key="1")
 if files3 is not None:
@@ -65,6 +118,16 @@ if files3 is not None:
     st.write(df3)
 
     fig=px.pie(df3,values="College", names="Unnamed: 0")
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, use_container_width=False)
+    
+st.header("Deeper look into NAs")
+files5 = st.file_uploader("Upload NA Info", type={"csv", "txt"}, key="5")
+if files5 is not None:
+    df5=pd.read_csv(files5)
+    st.write(df5)
+
+    fig=px.pie(df5,values="0", names="Non Applicable")
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     st.plotly_chart(fig, use_container_width=False)
 ##########################################
@@ -80,6 +143,7 @@ if files2 is not None:
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     st.plotly_chart(fig, use_container_width=False)
 ########## Titles #######
+
 st.header("Corresponding Authors by Title")
 files4 = st.file_uploader("Upload Title Info", type={"csv", "txt"}, key="4")
 if files4 is not None:
