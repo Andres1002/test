@@ -205,13 +205,15 @@ df["Title/Classification"].value_counts().to_csv('Output/CountTitle.csv') #count
 df["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 ### Make new script for this ###
 NAs=[]
+dualfunded=[]
 while x<len(df):
     while y<len(df3):
         if df3['Department'][y] ==majordepraw[x]: #match dept
             collegeinfo.append(df3['College'][y]) #grab college info
             if  df3['College'][y]=="N.A.":
                 NAs.append(majordepraw[x])
-            
+            if df3['College'].str.contains("/")[y]== True:
+                dualfunded.append(df3['College'][y])
       
             x=x+1
             break #restart loop
@@ -232,6 +234,8 @@ while x<len(df):
     
 df.to_csv("Output/Corresponding Author Info.csv")
 df4=pd.DataFrame()
+df5=pd.DataFrame()
 df4["Non Applicable"]=pd.DataFrame(NAs)
+df5["Dual Funded"]=pd.DataFrame(dualfunded)
 df4.value_counts().to_csv("Output/Non Applicables.csv")
-
+df5.value_counts().to_csv("Output/Dual Funded Departments.csv")
