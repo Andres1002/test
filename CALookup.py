@@ -85,11 +85,16 @@ typetitle=[]
 collegeinfo=[]
  ## End List Pre-Allocation
 #Read Data
-df= pd.read_csv('savedrecs3.csv')
+############ DATA IMPORTATION #######################
+dfraw= pd.read_excel('WoS_ISU_2021.xlsx') #Problems with using csv use excel
+
+df=dfraw.iloc[0:20,:] #Creating test Dataframe
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
 df2=pd.read_csv('Dictionary/dictionary.csv')
 df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
+##########################
+
 
 timer=(len(df)-x)*2
 print(len(df),"Accepted Entries Found")
@@ -235,7 +240,11 @@ while x<len(df):
 df.to_csv("Output/Corresponding Author Info.csv")
 df4=pd.DataFrame()
 df5=pd.DataFrame()
-df4["Non Applicable"]=pd.DataFrame(NAs)
-df5["Dual Funded"]=pd.DataFrame(dualfunded)
-df4.value_counts().to_csv("Output/Non Applicables.csv")
-df5.value_counts().to_csv("Output/Dual Funded Departments.csv")
+##DOI Capture ##
+df["DOI"].to_csv("DOIs/WoS_DOIs.csv")
+if len(NAs)>0:
+    df4["Non Applicable"]=pd.DataFrame(NAs)
+    df4.value_counts().to_csv("Output/Non Applicables.csv")
+if len(dualfunded)>0:
+    df5["Dual Funded"]=pd.DataFrame(dualfunded)
+    df5.value_counts().to_csv("Output/Dual Funded Departments.csv")
