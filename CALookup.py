@@ -91,8 +91,19 @@ dfraw= pd.read_excel('WoS_ISU_2021.xlsx') #Problems with using csv use excel
 df=dfraw.iloc[0:20,:] #Creating test Dataframe
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
+df["Dataset"] ="WoS"
 df2=pd.read_csv('Dictionary/dictionary.csv')
 df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
+
+
+df4= pd.read_excel('Dimensions.xlsx') #Problems with using csv use excel
+df4 = df4[df4["Publication Type"].str.contains("Article")] #Filtering
+
+df4 = df4.reset_index(drop=True)
+dfdim=df4.iloc[0:20,:] #Creating test Dataframe
+
+dfdim["Dataset"] ="Dim"
+
 ##########################
 
 
@@ -116,7 +127,7 @@ df["WoS Department"]= df["Addresses"].str.split('Iowa State Univ,').str[-1]
 df["WoS Department"]= df["WoS Department"].str.split(', Ames').str[0]
 
 ######## END String Manipulation #########
-
+KnownDOIs=[]
 while x<len(df):
     #name expander
     string=df["CA Last Name"][x]
@@ -136,6 +147,7 @@ while x<len(df):
     if a == False and b== True: #if one iastate email then look at isu directory
         lookup.append(df["Email Addresses"][x])
         CAParser(lookup[x])
+        KnownDOIs.append(df["DOI"][x])
         while y<len(df2):
             if df2["wosdept"][y] == majordepraw[x]:
                 majordepraw[x] = df2["realdept"][y]
@@ -163,9 +175,11 @@ while x<len(df):
             CorrespondingAuthor.append(df["copy"][x])
             titlestu.append("No Data")
             typetitle.append("No Data")
+            KnownDOIs.append(df["DOI"][x])
         else: #fallback if all else fails gmail accounts, yahoo acounts
             lookup.append(df["copy"][x])
             CAParser(lookup[x])
+            KnownDOIs.append(df["DOI"][x])
     
    
         while y<len(df2):
@@ -211,7 +225,11 @@ df["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 ### Make new script for this ###
 NAs=[]
 dualfunded=[]
+DimDOIs=dfdim["DOI"]
+DOIRefine=[]
 while x<len(df):
+    
+    
     while y<len(df3):
         if df3['Department'][y] ==majordepraw[x]: #match dept
             collegeinfo.append(df3['College'][y]) #grab college info
@@ -234,17 +252,44 @@ while x<len(df):
     if len(majordepraw)== len(collegeinfo): #If all are accounted for print
         df["College"]=collegeinfo
         df["College"].value_counts().to_csv('Output/CountColl.csv')
-        print("....Program Ended Sucessfully...")
+        print("....WoS Lookup Ended Sucessfully...")
     #print(department_char_code)
     
 df.to_csv("Output/Corresponding Author Info.csv")
 df4=pd.DataFrame()
 df5=pd.DataFrame()
 ##DOI Capture ##
+
 df["DOI"].to_csv("DOIs/WoS_DOIs.csv")
+
+
+
 if len(NAs)>0:
     df4["Non Applicable"]=pd.DataFrame(NAs)
     df4.value_counts().to_csv("Output/Non Applicables.csv")
 if len(dualfunded)>0:
     df5["Dual Funded"]=pd.DataFrame(dualfunded)
     df5.value_counts().to_csv("Output/Dual Funded Departments.csv")
+
+n=0
+x=0
+y=0
+## DOI Matching ##
+while True:
+    if KnownDOIs[x] != DimDOIs[y]: #Check if matching
+        x=x+1
+    else: #if matching try next DIM DOI and restart WoS Counter
+        y=y+1 #Try next dimensions entry
+        x=0
+    if x>=len(KnownDOIs): #If reaches end of WoS DOI assume no match in list and store for refinement
+        DOIRefine.append(DimDOIs)
+        y=y+1 #Try next dimensions entry
+        x=0
+    if y>=len(DimDOIs): #if dimensions list complete exit loop 
+        break
+    
+    
+        
+    
+    
+

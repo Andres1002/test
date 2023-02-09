@@ -9,8 +9,11 @@ Corresponding_Authors=[]
 #Dataframe Manipuation
 df= pd.read_excel('Dimensions.xlsx') #Problems with using csv use excel
 df = df[df["Publication Type"].str.contains("Article")] #Filtering
+
 df = df.reset_index(drop=True)
 df2=df.iloc[0:20,:] #Creating test Dataframe
+
+df2["Dataset"] ="Dim"
 
 
 while x<len(df2): #Main Look
