@@ -34,8 +34,8 @@ while x<len(df2): #Main Look
             name=name.split(";")[1]
             Corresponding_Authors.append(name)
         ## END IF
-        
-        Corresponding_Authors.append(name)
+        else:
+            Corresponding_Authors.append(name)
         ## END ELSE
 
 
