@@ -138,13 +138,17 @@ def CAParserDim(CorrespondingA):
             majordepraw.append(dept)
             titlestu.append(title)
             typetitle.append(ISU_Directory_lookupDIM(dimname)[8])
-    else: #else 1 if cannot find person get WoS guess Data
+    else: #else 1 if cannot find person get dim guess Data
         CorrespondingAuthor.append(dimname)
     #replace WoS department Data with augmented data from dictionary 
         majordepraw.append("No Data")
         typetitle.append("No Data")
         titlestu.append("No Data")
     return CorrespondingAuthor,majordepraw,titlestu
+
+
+
+
 ##List Pre-allocation
 x=0
 printcounter=0
@@ -166,12 +170,17 @@ df5=pd.DataFrame()
 dfmaster=pd.DataFrame(columns=['Dataset'])
 Dim_CAs=[]
 DOI=[]
+ArticleTitle=[]
+Publisher=[]
  ## End List Pre-Allocation
+ 
+ 
+ 
 #Read Data
 ############ DATA IMPORTATION #######################
 dfraw= pd.read_excel('WoS_ISU_2021.xlsx') #Problems with using csv use excel
 
-df=dfraw.iloc[0:20,:] #Creating test Dataframe
+df=dfraw.iloc[0:500,:] #Creating test Dataframe
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df = df.reset_index(drop=True)
 
@@ -182,7 +191,7 @@ df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
 
 
 dfdimraw= pd.read_excel('Dimensions.xlsx') #Problems with using csv use excel
-dfdim=dfdimraw.iloc[0:20,:]
+dfdim=dfdimraw.iloc[0:500,:]
 dfdim = dfdim[dfdim["Publication Type"].str.contains("Article")] #Filtering
 dfdim = dfdim.reset_index(drop=True)
 
@@ -192,9 +201,13 @@ dfdim["Dataset"] ="Dim"
 ##########################
 
 
-timer=(len(df)-x+len(dfdim))*2
+timer=(len(df)*2-x+len(dfdim))
 print(len(df)+len(dfdim),"Accepted Entries Found")
 print('Estimated time is:',timer,'seconds')
+
+
+
+
 
 ######## String Manipulation #########
 #split and search net ID and add new column
@@ -235,6 +248,8 @@ while x<len(df):
         dataset.append("WoS")
         KnownDOIs.append(df["DOI"][x])
         DOI.append(df["DOI"][x])
+        ArticleTitle.append(df["Article Title"][x])
+        Publisher.append(df["Publisher"][x])
         while y<len(df2):
             if df2["wosdept"][y] == majordepraw[x]:
                 majordepraw[x] = df2["realdept"][y]
@@ -265,12 +280,17 @@ while x<len(df):
             typetitle.append("No Data")
             KnownDOIs.append(df["DOI"][x])
             DOI.append(df["DOI"][x])
+            ArticleTitle.append(df["Article Title"][x])
+            Publisher.append(df["Publisher"][x])
+            
         else: #fallback if all else fails gmail accounts, yahoo acounts
             lookup.append(df["copy"][x])
             CAParserWoS(lookup[x])
             dataset.append("WoS")
             DOI.append(df["DOI"][x])
             KnownDOIs.append(df["DOI"][x])
+            ArticleTitle.append(df["Article Title"][x])
+            Publisher.append(df["Publisher"][x])
     
    
         while y<len(df2):
@@ -290,6 +310,7 @@ while x<len(df):
     printcounter= 1+printcounter
     percentage=x/(len(df)+len(dfdim))*100
     print("Checking Author",x,"/",len(df)+len(dfdim),"    Program is",format(percentage,'>1.2f'),"% Complete!",)
+print("WoS Section Complete. Analyzing Dimensions Data...\n")
 ##DOI Capture ##
 df["DOI"].to_csv("DOIs/WoS_DOIs.csv")
 y=0
@@ -313,19 +334,30 @@ while y<len(dfdim["DOI"]): # Try DataFrame.isin(values)
                 CAParserDim(dimname)
                 dataset.append("Dim")
                 DOI.append(dfdim["DOI"][y])
+                ArticleTitle.append(dfdim["Title"][y])
+                Publisher.append(dfdim["Publisher"][y])
             ## END IF
             else:
                 Dim_CAs.append(dimname)
                 CAParserDim(dimname)
                 dataset.append("Dim")
                 DOI.append(dfdim["DOI"][y])
+                ArticleTitle.append(dfdim["Title"][y])
+                Publisher.append(dfdim["Publisher"][y])
             ## END ELSE
         y=y+1
         
         #clear string variable
     else:
         y=y+1
-        
+    if (printcounter == 5):
+        timer=(len(df)-x+len(dfdim)-y)
+        print('Estimated time is:',timer,'seconds')
+        printcounter = 0
+    printcounter= 1+printcounter
+    percentage=x/(len(df)+len(dfdim))*100
+    print("Checking Author",x+y,"/",len(df)+len(dfdim),"    Program is",format(percentage,'>1.2f'),"% Complete!",)
+print("Dimensions Data Complete. Now Printing...\n")
         
     
     
@@ -342,7 +374,10 @@ dfmaster["StudentOrFaculty"]=typetitle
 dfmaster["Dataset"]=dataset
 dfmaster["DOI"]=DOI
 dfmaster['Department/Major']=majordepraw
-dfmaster.to_csv("Output/MasterList.csv")
+dfmaster["Journal Title"]= ArticleTitle
+dfmaster["Publisher"]=Publisher
+
+
 ######
 # str method or replace (replace & with and before admitting to count)
 
@@ -357,7 +392,9 @@ dfmaster["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 #####
 y=0
 x=0
-while x<len(df):
+
+##MODIFY
+while x<len(dfmaster):
     
     #deparment to college correction
     while y<len(df3):
@@ -369,23 +406,22 @@ while x<len(df):
                 dualfunded.append(df3['College'][y])
       
             x=x+1
-            break #restart loop
+            break #restart loop 
         else:
             y=y+1 #else keep looking
     if y==len(df3): # if cant find notify user
-        majordepraw.append(collegeinfo)
+        
         ##replace with blank
         print("Error: Input College Data for:",majordepraw[x])
         majordepraw[x] = "Input Data"
         x=x+1
     y=0
     if len(majordepraw)== len(collegeinfo): #If all are accounted for print
-        df["College"]=collegeinfo
-        df["College"].value_counts().to_csv('Output/CountColl.csv')
-        print("....WoS Lookup Ended Sucessfully...")
+        dfmaster["College"]=collegeinfo
+        dfmaster["College"].value_counts().to_csv('Output/CountColl.csv')
+        print("....CA Lookup Ended Sucessfully...")
     #print(department_char_code)
     
-df.to_csv("Output/Corresponding Author Info.csv")
 # Guard for no dualfunded/NAs
 if len(NAs)>0: 
     df4["Non Applicable"]=pd.DataFrame(NAs)
@@ -395,13 +431,12 @@ if len(dualfunded)>0:
     df5.value_counts().to_csv("Output/Dual Funded Departments.csv")
 
 
+dfmaster.to_csv("Output/MasterList.csv")
 
-#00) investigate repeated Dim_CAs
-#0) instead of shortned WOS DOI run all and compare to dimensions data
-#2) Run dimensions name lookup on DOI Refine
-#3) Create Custom Dataframe to prepare merge of Dimensions and WoS Data
-#3) DOI, Journal Name, CA
-######
-# Trigger Author lookup 
+#instead of having multiple output files use plotly to count for me
+#px.bar/histogram
+
+
+ 
     
 
