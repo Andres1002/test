@@ -18,9 +18,9 @@ def csvparser(files):
 
 def barplotter(df):
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=df["Unnamed: 0"], y=df["Department/Major"]))    
+    fig.add_trace(go.Bar(x=dfmaster["Department/Major"], y=df["counts"]))    
     fig.update_layout(
-    title="Volume of Selected Stocks", xaxis_title="Date", yaxis_title="Volume")
+    title="Department/Major", xaxis_title="Date", yaxis_title="Volume")
     st.plotly_chart(fig, use_container_width=True)
     
 sys.path.append(r'C:\Users\Andres\Documents\GitHub\test\Functions')
@@ -33,10 +33,12 @@ uploaded_files = st.file_uploader("Choose a CSV file", type={"csv", "txt"}, acce
 for uploaded_file in uploaded_files:
     st.write("filename:", uploaded_file.name)
     
-    if uploaded_file.name =="CountClass.csv":
-        df2= pd.read_csv(uploaded_file)
+    if uploaded_file.name =="MasterList.csv":
+        dfmaster= pd.read_csv(uploaded_file)
+        df2g=dfmaster["StudentOrFaculty"].value_counts().rename_axis('StudentOrFaculty').reset_index(name='counts')
+        
         st.header("Corresponding Authors by Classification")
-        fig=px.pie(df2,values="StudentOrFaculty", names="Unnamed: 0")
+        fig=px.pie(df2g,values="counts", names="StudentOrFaculty")
         fig.update_traces(textposition='inside')
         fig.update_layout(
         height=800,
@@ -46,10 +48,9 @@ for uploaded_file in uploaded_files:
         margin=dict(l=0,r=0,b=0,t=0,pad=0))
         st.plotly_chart(fig, use_container_width=False)
         
-    if uploaded_file.name =="CountColl.csv":
-        df3= pd.read_csv(uploaded_file)
+        df3g=dfmaster["College"].value_counts().rename_axis('College').reset_index(name='counts')
         st.header("Corresponding Authors by College")
-        fig=px.pie(df3,values="College", names="Unnamed: 0")
+        fig=px.pie(df3g,values="counts", names="College")
         fig.update_traces(textposition='inside')
         fig.update_layout(
         height=800,
@@ -59,16 +60,15 @@ for uploaded_file in uploaded_files:
         margin=dict(l=0,r=0,b=0,t=0,pad=0))
         st.plotly_chart(fig, use_container_width=False)
         
-    if uploaded_file.name =="CountDept.csv":
-        df= pd.read_csv(uploaded_file)
         st.header("Corresponding Authors by Department")
-        barplotter(df)
+        dfg=dfmaster["Department/Major"].value_counts().rename_axis('Department/Major').reset_index(name='counts')
+        barplotter(dfg)
 
     ######### Department ###########3
 
     #Try a dummy csv or an if statment before this
 
-        fig=px.pie(df,values="Department/Major", names="Unnamed: 0")
+        fig=px.pie(dfg,values="counts", names="Department/Major")
         fig.update_traces(textposition='inside')
         fig.update_layout(
         height=800,
@@ -82,10 +82,9 @@ for uploaded_file in uploaded_files:
 
 
         
-    if uploaded_file.name =="CountTitle.csv":
-        df4= pd.read_csv(uploaded_file)
+        df4g=dfmaster["Title/Classification"].value_counts().rename_axis('Title/Classification').reset_index(name='counts')
         st.header("Corresponding Authors by Title")
-        fig=px.pie(df4,values="Title/Classification", names="Unnamed: 0")
+        fig=px.pie(df4g,values="counts", names="Title/Classification")
         fig.update_traces(textposition='inside')
         fig.update_layout(
         height=800,
