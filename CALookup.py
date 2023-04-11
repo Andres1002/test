@@ -4,6 +4,8 @@
 import pandas as pd
 import requests
 import re
+def isNaN(string):
+    return string != string
 def ISU_Directory_lookup(CorrespondingA):
     
     #API Grab
@@ -64,7 +66,7 @@ def ISU_Directory_lookupDIM(CorrespondingA):
     isstudent=[]
     name=[]
     types=[]
-    DOI=[]
+
 
     
     if  parsed_response['status']== "success": #If Person is on directory grab info
@@ -89,6 +91,13 @@ def ISU_Directory_lookupDIM(CorrespondingA):
     return status,isstudent, department, department_char_code, title, classification,major,name,types #return info
 
 def CAParserWoS(CorrespondingA):
+    if isNaN(lookup[x]) == True:
+            CorrespondingAuthor.append(df["copy"][x])
+        #replace WoS department Data with augmented data from dictionary 
+            majordepraw.append(df["WoS Department"][x])
+            typetitle.append("No Data")
+            titlestu.append("No Data")
+            return CorrespondingAuthor,majordepraw,titlestu
     if  ISU_Directory_lookup(lookup[x])[0] == "success": #if person found in directory
         
         if ISU_Directory_lookup(lookup[x])[1] == True: #if student print and save student info
@@ -118,6 +127,13 @@ def CAParserWoS(CorrespondingA):
     return CorrespondingAuthor,majordepraw,titlestu
 
 def CAParserDim(CorrespondingA):
+    if isNaN(dimname) == True:
+        CorrespondingAuthor.append(dimname)
+    #replace WoS department Data with augmented data from dictionary 
+        majordepraw.append("No Data")
+        typetitle.append("No Data")
+        titlestu.append("No Data")
+        return CorrespondingAuthor,majordepraw,titlestu
     if  ISU_Directory_lookupDIM(dimname)[0] == "success": #if person found in directory
         
         if ISU_Directory_lookupDIM(dimname)[1] == True: #if student print and save student info
@@ -180,19 +196,33 @@ Publisher=[]
 ############ DATA IMPORTATION #######################
 dfraw= pd.read_excel('WoS_ISU_2021.xlsx') #Problems with using csv use excel
 
-df=dfraw.iloc[0:500,:] #Creating test Dataframe
+df=dfraw#Creating test Dataframe
+df = df.fillna('')
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
+df= df[df["Reprint Addresses"].str.contains("Iowa State")] #sort to only Iowa state reprints
 df = df.reset_index(drop=True)
+
+
+
+
+
 
 df["Dataset"] ="WoS"
 df2=pd.read_csv('Dictionary/dictionary.csv')
+df2 = df2.fillna('')
 df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
-
+df3 = df3.fillna('')
 
 
 dfdimraw= pd.read_excel('Dimensions.xlsx') #Problems with using csv use excel
-dfdim=dfdimraw.iloc[0:500,:]
+dfdim=dfdimraw
+
+
+dfdim = dfdim .fillna('')
+
 dfdim = dfdim[dfdim["Publication Type"].str.contains("Article")] #Filtering
+dfdim= dfdim[dfdim["Corresponding Authors"].str.contains("Iowa State")] #sort to only Iowa state reprints
+
 dfdim = dfdim.reset_index(drop=True)
 
 
@@ -241,8 +271,38 @@ while x<len(df):
         b="@iastate.edu" in df["Email Addresses"][x]
         v=".edu" in df["Email Addresses"][x]
         #end else
-        
-    if a == False and b== True: #if one iastate email then look at isu directory
+    if a==True and b==True:
+        stringem=df["Email Addresses"][x]
+        midstr=stringem.split(";")[0]
+        if "@iastate.edu" in midstr:
+            lookup.append(midstr)
+            CAParserWoS(lookup[x])
+            dataset.append("WoS")
+            KnownDOIs.append(df["DOI"][x])
+            DOI.append(df["DOI"][x])
+            ArticleTitle.append(df["Article Title"][x])
+            Publisher.append(df["Publisher"][x])
+        else:      
+            match = re.search(" (.*?)@iastate.edu(.*?)",stringem)
+            emailstring= match.group()
+            lookup.append(emailstring)
+            CAParserWoS(lookup[x])
+            dataset.append("WoS")
+            KnownDOIs.append(df["DOI"][x])
+            DOI.append(df["DOI"][x])
+            ArticleTitle.append(df["Article Title"][x])
+            Publisher.append(df["Publisher"][x])
+        while y<len(df2):
+            if df2["wosdept"][y] == majordepraw[x]:
+                majordepraw[x] = df2["realdept"][y]
+                break
+            else:
+                y=y+1
+        y=0
+
+        x=x+1
+            
+    elif a == False and b== True: #if one iastate email then look at isu directory
         lookup.append(df["Email Addresses"][x])
         CAParserWoS(lookup[x])
         dataset.append("WoS")
@@ -250,6 +310,7 @@ while x<len(df):
         DOI.append(df["DOI"][x])
         ArticleTitle.append(df["Article Title"][x])
         Publisher.append(df["Publisher"][x])
+        
         while y<len(df2):
             if df2["wosdept"][y] == majordepraw[x]:
                 majordepraw[x] = df2["realdept"][y]
@@ -351,11 +412,11 @@ while y<len(dfdim["DOI"]): # Try DataFrame.isin(values)
     else:
         y=y+1
     if (printcounter == 5):
-        timer=(len(df)-x+len(dfdim)-y)
+        timer=(len(df)-x+len(dfdim)*0.5-y)
         print('Estimated time is:',timer,'seconds')
         printcounter = 0
     printcounter= 1+printcounter
-    percentage=x/(len(df)+len(dfdim))*100
+    percentage=x+y/(len(df)+len(dfdim))*100
     print("Checking Author",x+y,"/",len(df)+len(dfdim),"    Program is",format(percentage,'>1.2f'),"% Complete!",)
 print("Dimensions Data Complete. Now Printing...\n")
         
@@ -385,19 +446,24 @@ dfmaster["Publisher"]=Publisher
 ###
 #print to csv
 
-## Cannot put in same dataframe index does not match
-dfmaster['Department/Major'].value_counts().to_csv('Output/CountDept.csv') #count dept names
-dfmaster["Title/Classification"].value_counts().to_csv('Output/CountTitle.csv') #count title names
-dfmaster["StudentOrFaculty"].value_counts().to_csv('Output/CountClass.csv')
 #####
 y=0
 x=0
 
 ##MODIFY
 while x<len(dfmaster):
+    while y<len(df2):
+        if df2["wosdept"][y] == majordepraw[x]:
+            majordepraw[x] = df2["realdept"][y]
+            break
+        else:
+            y=y+1
+    y=0
+
     
     #deparment to college correction
     while y<len(df3):
+
         if df3['Department'][y] ==majordepraw[x]: #match dept
             collegeinfo.append(df3['College'][y]) #grab college info
             if  df3['College'][y]=="N.A.":
@@ -418,7 +484,6 @@ while x<len(dfmaster):
     y=0
     if len(majordepraw)== len(collegeinfo): #If all are accounted for print
         dfmaster["College"]=collegeinfo
-        dfmaster["College"].value_counts().to_csv('Output/CountColl.csv')
         print("....CA Lookup Ended Sucessfully...")
     #print(department_char_code)
     
@@ -438,5 +503,26 @@ dfmaster.to_csv("Output/MasterList.csv")
 
 
  
-    
+#issues found
 
+#for blank CAs check authors IF full string is ISU authors then CA has to be from ISU
+
+
+
+
+#df to csv every 1000 track 
+#df.concatenate 
+#improve time
+
+
+
+#presentation
+#state the problem
+#use canva for design flowchart
+#high level conclusions
+
+#limitations with CA Lookup
+
+#Name expander wont work if there are multiple authors with the same last name
+#PostDocs dont appear in the isu directory
+    

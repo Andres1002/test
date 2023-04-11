@@ -94,6 +94,19 @@ for uploaded_file in uploaded_files:
         margin=dict(l=0,r=0,b=0,t=0,pad=0))
         st.plotly_chart(fig, use_container_width=False)
         
+        
+        df5g=dfmaster["Dataset"].value_counts().rename_axis('Dataset').reset_index(name='counts')
+        st.header("Where The Data is Coming From")
+        fig=px.pie(df5g,values="counts", names="Dataset")
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+        height=800,
+        width=850,
+        uniformtext_minsize=7, uniformtext_mode='hide',
+        legend=dict(font=dict(size=12)),
+        margin=dict(l=0,r=0,b=0,t=0,pad=0))
+        st.plotly_chart(fig, use_container_width=False)
+        
     if uploaded_file.name =="Non Applicables.csv":
         df5= pd.read_csv(uploaded_file)
         st.header("Deeper look into NAs")
