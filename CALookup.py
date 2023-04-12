@@ -195,9 +195,10 @@ Publisher=[]
 #Read Data
 ############ DATA IMPORTATION #######################
 dfraw= pd.read_excel('WoS_ISU_2021.xlsx') #Problems with using csv use excel
+df=dfraw.iloc[0:20,:]
 
-df=dfraw#Creating test Dataframe
 df = df.fillna('')
+
 df = df[df["Document Type"].str.contains("Article")] #sort to only articles
 df= df[df["Reprint Addresses"].str.contains("Iowa State")] #sort to only Iowa state reprints
 df = df.reset_index(drop=True)
@@ -214,8 +215,8 @@ df3=pd.read_csv('Dictionary/DictionaryCollege.csv')
 df3 = df3.fillna('')
 
 
-dfdimraw= pd.read_excel('Dimensions.xlsx') #Problems with using csv use excel
-dfdim=dfdimraw
+dfdimraw= pd.read_excel('Dimensions.xlsx') #Problems with using csv use 
+dfdim=dfdimraw.iloc[0:20,:]
 
 
 dfdim = dfdim .fillna('')
@@ -376,7 +377,8 @@ print("WoS Section Complete. Analyzing Dimensions Data...\n")
 df["DOI"].to_csv("DOIs/WoS_DOIs.csv")
 y=0
 ## DOI Matching ##
-
+dfraw['DOI']=dfraw['DOI'].str.lower()
+dfdim["DOI"]=dfdim["DOI"].str.lower()
 while y<len(dfdim["DOI"]): # Try DataFrame.isin(values)
 
     if dfraw['DOI'].eq(dfdim["DOI"][y]).any()== False:
@@ -412,11 +414,11 @@ while y<len(dfdim["DOI"]): # Try DataFrame.isin(values)
     else:
         y=y+1
     if (printcounter == 5):
-        timer=(len(df)-x+len(dfdim)*0.5-y)
+        timer=(len(dfdim)-y)
         print('Estimated time is:',timer,'seconds')
         printcounter = 0
     printcounter= 1+printcounter
-    percentage=x+y/(len(df)+len(dfdim))*100
+    percentage=(x+y)/(len(df)+len(dfdim))*100
     print("Checking Author",x+y,"/",len(df)+len(dfdim),"    Program is",format(percentage,'>1.2f'),"% Complete!",)
 print("Dimensions Data Complete. Now Printing...\n")
         
